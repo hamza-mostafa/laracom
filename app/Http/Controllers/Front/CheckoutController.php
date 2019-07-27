@@ -100,7 +100,6 @@ class CheckoutController extends Controller
     public function index(Request $request)
     {
         $products = $this->cartRepo->getCartItems();
-
         $customer = $request->user();
         $rates = null;
         $shipment_object_id = null;
