@@ -87,6 +87,11 @@ class CartController extends Controller
     {
         $product = $this->productRepo->findProductById($request->input('product'));
 
+        if (!$product->hasAvailableQuantity()) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Item not available');
+        }
+
         if ($product->attributes()->count() > 0) {
             $productAttr = $product->attributes()->where('default', 1)->first();
 
@@ -111,6 +116,11 @@ class CartController extends Controller
 
         $this->cartRepo->addToCart($product, $request->input('quantity'), $options);
 
+        $productRepository = new ProductRepository($product);
+        $productRepository->updateProduct([
+            'quantity' => $product->quantity - 1
+        ]);
+
         return redirect()->route('cart.index')
             ->with('message', 'Add to cart successful');
     }
@@ -124,6 +134,30 @@ class CartController extends Controller
      */
     public function update(UpdateCartRequest $request, $id)
     {
+        if ($request->input('quantity') <= 0) {
+            return $this->destroy($id);
+        }
+
+        $item = $this->cartRepo->findItem($id);
+        $productRepository = new ProductRepository($item->product);
+
+        if ($item->qty > $request->input('quantity')) {
+            $productRepository->updateProduct([
+                'quantity' => $item->qty - $request->input('quantity')
+            ]);
+        }
+        else {
+            if (!$item->product->hasAvailableQuantity($request->input('quantity') - $item->product->quantity)) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'Quantity not available');
+            }
+
+            $productRepository->updateProduct([
+                'quantity' => $item->product->quantity - ($request->input('quantity') - $item->product->quantity)
+            ]);
+
+        }
+
         $this->cartRepo->updateQuantityInCart($id, $request->input('quantity'));
 
         request()->session()->flash('message', 'Update cart successful');
@@ -138,7 +172,15 @@ class CartController extends Controller
      */
     public function destroy($id)
     {
+        $item = $this->cartRepo->findItem($id);
         $this->cartRepo->removeToCart($id);
+
+        $productRepository = new ProductRepository($item->product);
+        $productRepository->updateProduct([
+            'quantity' => $item->product->quantity + $item->qty
+        ]);
+
+
 
         request()->session()->flash('message', 'Removed to cart successful');
         return redirect()->route('cart.index');
