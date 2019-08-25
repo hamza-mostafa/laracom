@@ -2,6 +2,8 @@
 
 namespace App\Shop\Cities\Repositories;
 
+use App\Shop\Cities\Exceptions\CityInvalidArgumentException;
+use Illuminate\Database\QueryException;
 use Jsdecena\Baserepo\BaseRepository;
 use App\Shop\Cities\Exceptions\CityNotFoundException;
 use App\Shop\Cities\Repositories\Interfaces\CityRepositoryInterface;
@@ -29,9 +31,9 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
      *
      * @return mixed
      */
-    public function listCities($columns = ['*'], string $orderBy = 'name', string $sortBy = 'asc')
+    public function listCities(string $orderBy = 'name', string $sortBy = 'asc')
     {
-        return $this->all($columns, $orderBy, $sortBy);
+        return $this->all(['*'], $orderBy, $sortBy);
     }
 
     /**
@@ -53,12 +55,18 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
     /**
      * @param array $params
      *
+     * @param $id
      * @return boolean
+     * @throws CityNotFoundException
      */
-    public function updateCity(array $params) : bool
+    public function updateCity(array $params, int $id) : bool
     {
-        $this->model->update($params);
-        return $this->model->save();
+        try {
+            $this->findCityById($id)->update($params);
+            return $this->model->save();
+        }catch (QueryException $e){
+            throw new CityInvalidArgumentException($e->getMessage());
+        }
     }
 
     /**
@@ -81,6 +89,21 @@ class CityRepository extends BaseRepository implements CityRepositoryInterface
     {
         try {
             return $this->model->where(compact('name'))->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            throw new CityNotFoundException('City not found.');
+        }
+    }
+
+    /**
+     * @param int $id
+     * @return bool
+     * @throws CityNotFoundException
+     * @deprecated @findCityByName
+     */
+    public function deleteCityById(int $id) : bool
+    {
+        try {
+            return $this->findCityById($id)->delete();
         } catch (ModelNotFoundException $e) {
             throw new CityNotFoundException('City not found.');
         }

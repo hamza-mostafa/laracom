@@ -2,6 +2,7 @@
 
 namespace App\Shop\States\Repositories;
 
+use App\Shop\States\Repositories\interfaces\StateRepositoryInterface;
 use Jsdecena\Baserepo\BaseRepository;
 use App\Shop\Cities\City;
 use App\Shop\Cities\Repositories\CityRepository;
@@ -24,9 +25,33 @@ class StateRepository extends BaseRepository implements StateRepositoryInterface
     /**
      * @return Collection
      */
-    public function listCities(): Collection
+    public function listStates(string $order = 'id', string $sort = 'desc'): Collection
     {
-        $cityRepo = new CityRepository(new City);
-        return $cityRepo->listCitiesByStateCode($this->model->state_code);
+        return $this->all(['*'],$order,$sort);
+    }
+
+    public function listCities(int $stateId)
+    {
+        // TODO: Implement listStates() method.
+    }
+
+    public function findStateById(int $id)
+    {
+        // TODO: Implement findStateById() method.
+    }
+
+    public function updateState(array $params): bool
+    {
+        // TODO: Implement updateState() method.
+    }
+
+    public function findCountry()
+    {
+        // TODO: Implement findCountry() method.
+    }
+
+    public function destroy($id)
+    {
+        // TODO: Implement destroy() method.
     }
 }

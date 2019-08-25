@@ -75,14 +75,15 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
      *
      * @param array $params
      *
+     * @param int $id
      * @return Country
      * @throws CountryNotFoundException
      */
-    public function updateCountry(array $params) : Country
+    public function updateCountry(array $params, int $id) : Country
     {
         try {
-            $this->model->update($params);
-            return $this->findCountryById($this->model->id);
+            $this->findCountryById($id)->update($params);
+            return $this->model->save();
         } catch (QueryException $e) {
             throw new CountryInvalidArgumentException($e->getMessage());
         }
@@ -95,5 +96,19 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
     public function listStates() : Collection
     {
         return $this->model->states()->get();
+    }
+
+    /**
+     * @param int $countryId
+     * @return bool
+     * @throws CountryNotFoundException
+     */
+    public function destroy(int $countryId): bool
+    {
+        try{
+            return $this->findCountryById($countryId)->delete();
+        } catch (ModelNotFoundException $e) {
+            throw new CountryNotFoundException('Country not found.');
+}
     }
 }

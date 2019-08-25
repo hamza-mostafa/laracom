@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Cities;
 
 use App\Shop\Cities\Repositories\CityRepository;
 use App\Shop\Cities\Repositories\Interfaces\CityRepositoryInterface;
-use App\Shop\Cities\Requests\UpdateCityRequest;
+use App\Shop\Cities\Requests\UpdateStateRequest;
 use App\Http\Controllers\Controller;
 
 class CityController extends Controller
@@ -46,13 +46,13 @@ class CityController extends Controller
     /**
      * Update the city
      *
-     * @param UpdateCityRequest $request
+     * @param UpdateStateRequest $request
      * @param int $countryId
      * @param int $provinceId
      * @param $city
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(UpdateCityRequest $request, $countryId, $provinceId, $city)
+    public function update(UpdateStateRequest $request, $countryId, $provinceId, $city)
     {
         $city = $this->cityRepo->findCityByName($city);
 
